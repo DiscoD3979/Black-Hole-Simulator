@@ -1,0 +1,37 @@
+# ── OS junk ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs / temp ──────────────────────────────────────────
+*.log
+test-output.txt
+*.tmp
+
+# ── Dependencies / build ─────────────────────────────────
+node_modules/
+dist/
+build/
+
+# ── Python (local tooling) ───────────────────────────────
+__pycache__/
+.venv/
+venv/
+
+# ── Agent / automation state (not part of the app) ──────
+.orchestrator/
+.playwright-mcp/
+.agents/
+.claude/
+
+# ── Editors / IDE ────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Local screenshots / media dumps ─────────────────────
+*.png
+*.jpg
+*.jpeg
+!docs/**/*.png

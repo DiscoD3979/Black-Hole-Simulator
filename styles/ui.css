@@ -1,0 +1,387 @@
+/* ── UI Panel — Black Hole Simulator (compact) ──────────────────────── */
+
+/* ── Container ─────────────────────────────────────────────────────── */
+#ui {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  bottom: auto;
+  z-index: 1000;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: calc(100vh - 20px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+  transition: opacity 0.2s ease;
+}
+
+#ui.hidden {
+  opacity: 0;
+  pointer-events: none !important;
+}
+
+#ui::-webkit-scrollbar { width: 4px; }
+#ui::-webkit-scrollbar-track { background: transparent; }
+#ui::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+/* ── Panel ─────────────────────────────────────────────────────────── */
+.bh-panel {
+  width: 188px;
+  background: rgba(0,0,0,0.72);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px;
+  color: rgba(255,255,255,0.9);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  overflow: hidden;
+}
+
+.bh-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  user-select: none;
+}
+
+.bh-panel__header:hover {
+  background: rgba(255,255,255,0.07);
+}
+
+.bh-panel__title {
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.7);
+}
+
+.bh-panel__chevron {
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid rgba(255,255,255,0.4);
+  border-bottom: 1.5px solid rgba(255,255,255,0.4);
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+  margin-top: 2px;
+}
+
+.bh-panel.collapsed .bh-panel__chevron {
+  transform: rotate(-135deg);
+  margin-top: -2px;
+}
+
+.bh-panel__body {
+  padding: 5px 8px 6px;
+  overflow: hidden;
+  max-height: 600px;
+  transition: max-height 0.2s ease, padding 0.2s ease, opacity 0.15s ease;
+  opacity: 1;
+}
+
+.bh-panel.collapsed .bh-panel__body {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+}
+
+/* ── Slider row ────────────────────────────────────────────────────── */
+.bh-slider {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1px 6px;
+  padding: 2px 0;
+}
+
+.bh-slider__label {
+  grid-column: 1 / -1;
+  font-size: 9.5px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 1px;
+}
+
+.bh-slider__input {
+  grid-column: 1;
+  width: 100%;
+  height: 3px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.bh-slider__input::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.12);
+}
+
+.bh-slider__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6eb4ff;
+  border: none;
+  margin-top: -3.5px;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(110,180,255,0.4);
+  transition: box-shadow 0.15s ease;
+}
+
+.bh-slider__input::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 8px rgba(110,180,255,0.7);
+}
+
+.bh-slider__input::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.12);
+  border: none;
+}
+
+.bh-slider__input::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6eb4ff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(110,180,255,0.4);
+}
+
+.bh-slider__value {
+  grid-column: 2;
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255,255,255,0.75);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ── Button group (quality preset) ─────────────────────────────────── */
+.bh-btn-group {
+  display: flex;
+  gap: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 3px 0;
+}
+
+.bh-btn-group__btn {
+  flex: 1;
+  padding: 4px 3px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: none;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  font-family: inherit;
+}
+
+.bh-btn-group__btn:not(:last-child) {
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.bh-btn-group__btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.8);
+}
+
+.bh-btn-group__btn.active {
+  background: rgba(110,180,255,0.2);
+  color: #6eb4ff;
+}
+
+/* ── Toggle switch ─────────────────────────────────────────────────── */
+.bh-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+
+.bh-toggle__label {
+  font-size: 9.5px;
+  color: rgba(255,255,255,0.55);
+}
+
+.bh-toggle__switch {
+  position: relative;
+  width: 26px;
+  height: 14px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+  padding: 0;
+}
+
+.bh-toggle__switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  transition: transform 0.15s, background 0.15s;
+}
+
+.bh-toggle__switch.on {
+  background: rgba(110,180,255,0.3);
+}
+
+.bh-toggle__switch.on::after {
+  transform: translateX(12px);
+  background: #6eb4ff;
+}
+
+/* ── Read-only display ─────────────────────────────────────────────── */
+.bh-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 2px 0;
+}
+
+.bh-display__label {
+  font-size: 9.5px;
+  color: rgba(255,255,255,0.45);
+}
+
+.bh-display__value {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255,255,255,0.8);
+}
+
+/* ── Section divider ───────────────────────────────────────────────── */
+.bh-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 4px 0;
+}
+
+/* ── Controls helper (bottom-left, clickable) ──────────────────────── */
+.bh-controls {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  z-index: 1000;
+  pointer-events: auto;
+  background: rgba(0,0,0,0.6);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px;
+  padding: 6px 8px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 10px;
+  color: rgba(255,255,255,0.75);
+  max-width: 230px;
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.bh-controls.hidden {
+  opacity: 0;
+  pointer-events: none !important;
+}
+
+.bh-controls__title {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bh-controls__collapse {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0 2px;
+  font-family: inherit;
+}
+
+.bh-controls__collapse:hover { color: #fff; }
+
+.bh-controls.collapsed .bh-controls__row { display: none; }
+
+.bh-controls__row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 2px 0;
+}
+
+.bh-controls__desc {
+  flex: 1;
+  color: rgba(255,255,255,0.6);
+  white-space: nowrap;
+}
+
+.bh-key {
+  display: inline-block;
+  min-width: 16px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.85);
+  font-size: 9px;
+  font-weight: 600;
+  text-align: center;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.bh-key--clickable {
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+
+.bh-key--clickable:hover {
+  background: rgba(110,180,255,0.25);
+  border-color: rgba(110,180,255,0.6);
+  color: #fff;
+}
+
+.bh-key--active {
+  background: rgba(110,180,255,0.45) !important;
+  border-color: #6eb4ff !important;
+  color: #fff !important;
+}
+
+/* ── Focus ring removal for PointerLock compat ─────────────────────── */
+.bh-panel *:focus,
+.bh-controls *:focus {
+  outline: none;
+}
