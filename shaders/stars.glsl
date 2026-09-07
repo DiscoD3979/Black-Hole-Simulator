@@ -63,9 +63,10 @@ vec3 sampleStars(vec3 dir, float density, float time, float seed) {
   vec3 nd = normalize(dir);
   vec3 col = vec3(0.0);
   // sharpness values assume ang2 = theta^2 falloff, so blobs stay 1-4 px dots
-  col += sampleStarLayer(nd, density, time, seed + 0.0,  vec2(960.0, 480.0), 0.42, 2200000.0, 1.6);
-  col += sampleStarLayer(nd, density, time, seed + 5.3,  vec2(480.0, 240.0), 0.50, 1100000.0, 1.2);
-  col += sampleStarLayer(nd, density, time, seed + 11.1, vec2(220.0, 110.0), 0.55,  500000.0, 0.9);
-  col += sampleStarLayer(nd, density, time, seed + 19.7, vec2( 72.0,  36.0), 0.70,  220000.0, 0.5);
+  col += sampleStarLayer(nd, density, time, seed + 0.0,  vec2(1920.0, 960.0), 0.34, 6500000.0, 2.0);
+  col += sampleStarLayer(nd, density, time, seed + 5.3,  vec2(960.0, 480.0), 0.42, 2200000.0, 1.6);
+  col += sampleStarLayer(nd, density, time, seed + 11.1, vec2(480.0, 240.0), 0.50, 1100000.0, 1.2);
+  col += sampleStarLayer(nd, density, time, seed + 19.7, vec2(220.0, 110.0), 0.55,  500000.0, 0.9);
+  col += sampleStarLayer(nd, density, time, seed + 27.3, vec2( 72.0,  36.0), 0.70,  220000.0, 0.5);
   return col;
 }

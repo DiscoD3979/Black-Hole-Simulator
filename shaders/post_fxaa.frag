@@ -26,8 +26,8 @@ void main() {
   float lMin = min(lM, min(min(lNW, lNE), min(lSW, lSE)));
   float lMax = max(lM, max(max(lNW, lNE), max(lSW, lSE)));
 
-  // Flat area: skip blending entirely.
-  if (lMax - lMin < max(0.0432, lMax * 0.125)) {
+  // Flat area: skip blending entirely (lower threshold = applies more often).
+  if (lMax - lMin < max(0.03, lMax * 0.09)) {
     fragColor = vec4(rgbM, 1.0);
     return;
   }

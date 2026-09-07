@@ -1,4 +1,4 @@
-vec3 temperature_to_rgb(float t) {
+vec3 temperature_to_rgb_cold(float t) {
   t = clamp(t, 0.0, 1.0);
   vec3 deepBlue = vec3(0.04, 0.09, 0.35);
   vec3 blue     = vec3(0.22, 0.46, 1.00);
@@ -11,7 +11,22 @@ vec3 temperature_to_rgb(float t) {
   return mix(whiteHot, pinkHot, (t - 0.90) / 0.10);
 }
 
-vec3 sampleAccretionDisk(vec3 hitPoint, vec3 rayDir, vec3 bhPos, float bhRadius, float innerRadius, float outerRadius, float density, float temperature, float accretionSpeed, float time, float spiralTightness, float dopplerStrength) {
+vec3 temperature_to_rgb_warm(float t) {
+  t = clamp(t, 0.0, 1.0);
+  vec3 deepRed = vec3(0.45, 0.02, 0.01);
+  vec3 orange  = vec3(1.00, 0.30, 0.05);
+  vec3 yellow  = vec3(1.00, 0.72, 0.30);
+  vec3 whiteHot = vec3(1.00, 0.98, 0.95);
+  if (t < 0.35) return mix(deepRed, orange, t / 0.35);
+  if (t < 0.70) return mix(orange, yellow, (t - 0.35) / 0.35);
+  return mix(yellow, whiteHot, (t - 0.70) / 0.30);
+}
+
+vec3 temperature_to_rgb(float t, float hue) {
+  return mix(temperature_to_rgb_cold(t), temperature_to_rgb_warm(t), clamp(hue, 0.0, 1.0));
+}
+
+vec3 sampleAccretionDisk(vec3 hitPoint, vec3 rayDir, vec3 bhPos, float bhRadius, float innerRadius, float outerRadius, float density, float temperature, float accretionSpeed, float time, float spiralTightness, float dopplerStrength, float hue, float brightness) {
   vec2 d = hitPoint.xz - bhPos.xz;
   float r = length(d);
   if (r < innerRadius * 0.9 || r > outerRadius * 1.3) {
@@ -27,10 +42,11 @@ vec3 sampleAccretionDisk(vec3 hitPoint, vec3 rayDir, vec3 bhPos, float bhRadius,
   float swirl = angle + spiralTightness * lr - time * omega;
 
   // Long azimuthal streaks sheared by differential rotation + fine detail,
-  // evaluated in log-radius so ring spacing stays even across the disk.
-  float n1 = fbm(vec3(swirl * 2.2, lr * 4.5, time * 0.10));
-  float n2 = fbm(vec3(swirl * 6.5 + 11.3, lr * 10.0 + 4.0, 7.7));
-  float filaments = (0.40 + 0.60 * n1) * (0.60 + 0.60 * n2);
+  // evaluated in log-radius. Low lr frequencies keep the ring bands wide and
+  // smooth instead of tight vinyl-groove stripes.
+  float n1 = fbm(vec3(swirl * 2.2, lr * 2.6, time * 0.10));
+  float n2 = fbm(vec3(swirl * 6.5 + 11.3, lr * 5.5 + 4.0, 7.7));
+  float filaments = (0.52 + 0.48 * n1) * (0.68 + 0.42 * n2);
 
   // Radial structure: hot thin inner region, soft outer fade (no hard cut).
   float radialFalloff = pow(innerRadius / max(r, innerRadius), 2.4);
@@ -57,11 +73,11 @@ vec3 sampleAccretionDisk(vec3 hitPoint, vec3 rayDir, vec3 bhPos, float bhRadius,
 
   float shift = doppler * gred;
   float tempObs = clamp(tempLocal * temperature * mix(1.0, shift, 0.6), 0.0, 1.0);
-  vec3 baseCol = temperature_to_rgb(tempObs);
+  vec3 baseCol = temperature_to_rgb(tempObs, hue);
 
-  float emission = 2.1;
+  float emission = 2.1 * brightness;
   float lum = dens * (0.55 + 0.45 * temperature) * beam * mix(1.0, gred * gred, 0.35);
   vec3 color = baseCol * lum * emission;
-  color += baseCol * dens * 0.02;
+  color += baseCol * dens * 0.02 * brightness;
   return max(color, vec3(0.0));
 }

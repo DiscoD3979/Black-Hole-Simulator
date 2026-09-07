@@ -55,8 +55,24 @@ export class UIManager {
       onChange: (v) => this._apply('accretionSpeed', v)
     })
     this._sliders.lensStrength = p.addSlider({
-      label: 'Lens Strength', min: 0.0, max: 2.0, step: 0.05, value: 1.0,
+      label: 'Lens Strength', min: 0.0, max: 2.0, step: 0.05, value: 0.9,
       onChange: (v) => this._apply('lensStrength', v)
+    })
+    this._sliders.diskHue = p.addSlider({
+      label: 'Disk Color', min: 0.0, max: 1.0, step: 0.05, value: 0.0,
+      onChange: (v) => this._apply('diskHue', v)
+    })
+    this._sliders.diskBrightness = p.addSlider({
+      label: 'Disk Brightness', min: 0.0, max: 2.0, step: 0.05, value: 1.0,
+      onChange: (v) => this._apply('diskBrightness', v)
+    })
+    this._sliders.diskThickness = p.addSlider({
+      label: 'Disk Thickness', min: 0.2, max: 2.0, step: 0.05, value: 1.0,
+      onChange: (v) => this._apply('diskThickness', v)
+    })
+    this._sliders.ringStrength = p.addSlider({
+      label: 'Ring Brightness', min: 0.0, max: 2.0, step: 0.05, value: 1.0,
+      onChange: (v) => this._apply('ringStrength', v)
     })
 
     this._panels.blackHole = p
@@ -159,6 +175,18 @@ export class UIManager {
         break
       case 'lensStrength':
         if (this._bh) this._bh.setLensStrength?.(value) ?? (this._bh.lensStrength = value)
+        break
+      case 'diskHue':
+        if (this._disk) this._disk.setParam?.('hue', value) ?? (this._disk.hue = value)
+        break
+      case 'diskBrightness':
+        if (this._disk) this._disk.setParam?.('brightness', value) ?? (this._disk.brightness = value)
+        break
+      case 'diskThickness':
+        if (this._disk) this._disk.setParam?.('thickness', value) ?? (this._disk.thickness = value)
+        break
+      case 'ringStrength':
+        if (this._bh) this._bh.setRingStrength?.(value) ?? (this._bh.ringStrength = value)
         break
       case 'raymarchSteps':
         if (this._qm) this._qm.setParam?.('raymarchSteps', Math.round(value))

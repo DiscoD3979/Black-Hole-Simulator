@@ -81,9 +81,10 @@ export class BloomPass {
       gl.bindVertexArray(null)
     }
 
-    gl.enable(gl.BLEND)
-    gl.blendFunc(gl.ONE, gl.ONE)
-
+    // Upsample: a normal (non-additive) box blur per level. BLEND must stay
+    // DISABLED so each upFbo is fully REPLACED every frame — an additive
+    // ONE,ONE blend here accumulates stale bright pixels across frames and
+    // produces persistent smear/motion trails when the camera moves.
     for (let i = 0; i < BLOOM_LEVELS; i++) {
       const fb = this.upFbos[i]
       gl.bindFramebuffer(gl.FRAMEBUFFER, fb.framebuffer)
@@ -97,8 +98,6 @@ export class BloomPass {
       gl.drawArrays(gl.TRIANGLES, 0, 3)
       gl.bindVertexArray(null)
     }
-
-    gl.disable(gl.BLEND)
   }
 
   setIntensity(v) {

@@ -7,6 +7,9 @@ export class AccretionDisk {
     this.accretionSpeed = options.accretionSpeed !== undefined ? options.accretionSpeed : 0.0
     this.spiralTightness = options.spiralTightness !== undefined ? options.spiralTightness : 4.0
     this.dopplerStrength = options.dopplerStrength !== undefined ? options.dopplerStrength : 0.4
+    this.brightness = options.brightness !== undefined ? options.brightness : 1.0
+    this.hue = options.hue !== undefined ? options.hue : 0.0
+    this.thickness = options.thickness !== undefined ? options.thickness : 1.0
     this._shaderCache = null
   }
 
@@ -19,6 +22,9 @@ export class AccretionDisk {
       uDiskAccretionSpeed: this.accretionSpeed,
       uDiskSpiralTightness: this.spiralTightness,
       uDiskDopplerStrength: this.dopplerStrength,
+      uDiskBrightness: this.brightness,
+      uDiskHue: this.hue,
+      uDiskThickness: this.thickness,
     }
   }
 
@@ -38,5 +44,8 @@ export class AccretionDisk {
     else if (name === 'accretionSpeed') this.accretionSpeed = value
     else if (name === 'spiralTightness') this.spiralTightness = value
     else if (name === 'dopplerStrength') this.dopplerStrength = value
+    else if (name === 'brightness') this.brightness = value
+    else if (name === 'hue') this.hue = value
+    else if (name === 'thickness') this.thickness = value
   }
 }

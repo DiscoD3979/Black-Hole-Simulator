@@ -5,7 +5,7 @@ const PROFILES = {
     name: 'MAXIMUM',
     raymarchSteps: 256,
     secondaryStepScale: 0.75,
-    starDensity: 0.7,
+    starDensity: 0.9,
     bloom: 1.5,
     chromaticAberration: 0.0,
     temporalAA: true,
@@ -14,13 +14,17 @@ const PROFILES = {
     diskTemperature: 0.6,
     accretionSpeed: 0.0,
     lensStrength: 0.9,
+    diskBrightness: 1.0,
+    diskHue: 0.0,
+    diskThickness: 1.0,
+    ringStrength: 1.0,
     starTwinkleSpeed: 0.5,
   },
   HIGH: {
     name: 'HIGH',
     raymarchSteps: 128,
     secondaryStepScale: 0.4,
-    starDensity: 0.55,
+    starDensity: 0.7,
     bloom: 1.2,
     chromaticAberration: 0.0,
     temporalAA: true,
@@ -29,13 +33,17 @@ const PROFILES = {
     diskTemperature: 0.6,
     accretionSpeed: 0.0,
     lensStrength: 0.9,
+    diskBrightness: 1.0,
+    diskHue: 0.0,
+    diskThickness: 1.0,
+    ringStrength: 1.0,
     starTwinkleSpeed: 0.5,
   },
   PERFORMANCE: {
     name: 'PERFORMANCE',
     raymarchSteps: 64,
     secondaryStepScale: 0.3,
-    starDensity: 0.25,
+    starDensity: 0.4,
     bloom: 0.6,
     chromaticAberration: 0.0,
     temporalAA: false,
@@ -44,6 +52,10 @@ const PROFILES = {
     diskTemperature: 0.6,
     accretionSpeed: 0.0,
     lensStrength: 0.9,
+    diskBrightness: 1.0,
+    diskHue: 0.0,
+    diskThickness: 1.0,
+    ringStrength: 1.0,
     starTwinkleSpeed: 0.5,
   },
 }
@@ -105,12 +117,18 @@ export class QualityManager {
         if (typeof this._scene.blackHole.setLensStrength === 'function') {
           this._scene.blackHole.setLensStrength(params.lensStrength)
         }
+        if (typeof this._scene.blackHole.setRingStrength === 'function') {
+          this._scene.blackHole.setRingStrength(params.ringStrength)
+        }
       }
       if (this._scene.accretionDisk) {
         if (typeof this._scene.accretionDisk.setParam === 'function') {
           this._scene.accretionDisk.setParam('density', params.diskDensity)
           this._scene.accretionDisk.setParam('temperature', params.diskTemperature)
           this._scene.accretionDisk.setParam('accretionSpeed', params.accretionSpeed)
+          this._scene.accretionDisk.setParam('brightness', params.diskBrightness)
+          this._scene.accretionDisk.setParam('hue', params.diskHue)
+          this._scene.accretionDisk.setParam('thickness', params.diskThickness)
         }
       }
     }

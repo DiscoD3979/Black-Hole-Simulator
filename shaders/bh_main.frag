@@ -22,6 +22,10 @@ uniform float uDiskTemperature;
 uniform float uDiskAccretionSpeed;
 uniform float uDiskSpiralTightness;
 uniform float uDiskDopplerStrength;
+uniform float uDiskBrightness;
+uniform float uDiskHue;
+uniform float uDiskThickness;
+uniform float uRingStrength;
 
 out vec4 fragColor;
 
@@ -95,11 +99,15 @@ void main() {
     // shadow edge instead of leaving a black gap.
     if (rc > rs * 1.02 && rc < uDiskOuterRadius * 1.1) {
       float edge = smoothstep(rs * 1.0, rs * 1.25, rc);
-      float hn = rs * (0.05 + 0.22 * clamp((rc - uDiskInnerRadius) / diskSpan, 0.0, 1.0));
+      float hn = rs * (0.05 + 0.22 * clamp((rc - uDiskInnerRadius) / diskSpan, 0.0, 1.0)) * uDiskThickness;
       float vert = exp(-relY * relY / max(hn * hn, 1e-6));
       float radial = pow(uDiskInnerRadius / max(rc, rs * 0.9), 2.4);
-      float glow = vert * radial * edge * dt * 0.16 * uDiskDensity;
+      // Anti-banding: fade the per-step contribution when the layer is thinner
+      // than the step size, so discrete steps cannot print visible rings.
+      float w = clamp(hn / max(dt, 1e-4), 0.0, 1.0);
+      float glow = vert * radial * edge * dt * 0.16 * uDiskDensity * uDiskBrightness * w;
       vec3 glowCol = mix(vec3(0.30, 0.50, 1.05), vec3(0.90, 0.85, 1.05), clamp(radial * 0.55, 0.0, 1.0));
+      glowCol = mix(glowCol, vec3(1.0, 0.55, 0.22) + glowCol * 0.4, smoothstep(0.5, 0.85, uDiskHue));
       col += trans * glowCol * glow;
     }
 
@@ -112,7 +120,8 @@ void main() {
       if (crossR > rs * 1.02 && crossR < uDiskOuterRadius * 1.25) {
         vec3 dc = sampleAccretionDisk(crossP, dir, uBHPosition, rs,
           uDiskInnerRadius, uDiskOuterRadius, uDiskDensity, uDiskTemperature,
-          uDiskAccretionSpeed, uTime, uDiskSpiralTightness, uDiskDopplerStrength);
+          uDiskAccretionSpeed, uTime, uDiskSpiralTightness, uDiskDopplerStrength,
+          uDiskHue, uDiskBrightness);
         float a = clamp(max(dc.r, max(dc.g, dc.b)) * 2.0, 0.0, 1.0);
         col += trans * dc;
         trans *= 1.0 - a * 0.85;
@@ -130,7 +139,8 @@ void main() {
   // light that orbited close to 1.5 rs before escaping or falling in.
   float ringT = (minR - 1.5 * rs) / (0.30 * rs);
   float ring = exp(-ringT * ringT);
-  col += vec3(0.60, 0.70, 1.10) * ring * 0.60 * (0.4 + 0.6 * uDiskDensity);
+  vec3 ringCol = mix(vec3(0.60, 0.70, 1.10), vec3(1.00, 0.55, 0.25), smoothstep(0.3, 0.75, uDiskHue));
+  col += ringCol * ring * 0.60 * (0.4 + 0.6 * uDiskDensity) * uRingStrength;
 
   if (!absorbed) {
     col += trans * (sampleBackground(dir) + vec3(0.0, 0.0, 0.002));

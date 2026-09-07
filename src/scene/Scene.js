@@ -206,6 +206,10 @@ export class Scene {
         gl.uniform1f(u.uDiskAccretionSpeed, du.uDiskAccretionSpeed)
         gl.uniform1f(u.uDiskSpiralTightness, du.uDiskSpiralTightness)
         gl.uniform1f(u.uDiskDopplerStrength, du.uDiskDopplerStrength)
+        gl.uniform1f(u.uDiskBrightness, du.uDiskBrightness)
+        gl.uniform1f(u.uDiskHue, du.uDiskHue)
+        gl.uniform1f(u.uDiskThickness, du.uDiskThickness)
+        gl.uniform1f(u.uRingStrength, self.blackHole.ringStrength)
 
         gl.disable(gl.DEPTH_TEST)
         gl.disable(gl.BLEND)
@@ -283,6 +287,10 @@ export class Scene {
         gl.uniform1f(u.uDiskAccretionSpeed, du.uDiskAccretionSpeed)
         gl.uniform1f(u.uDiskSpiralTightness, du.uDiskSpiralTightness)
         gl.uniform1f(u.uDiskDopplerStrength, du.uDiskDopplerStrength)
+        gl.uniform1f(u.uDiskBrightness, du.uDiskBrightness)
+        gl.uniform1f(u.uDiskHue, du.uDiskHue)
+        gl.uniform1f(u.uDiskThickness, du.uDiskThickness)
+        gl.uniform1f(u.uRingStrength, self.blackHole.ringStrength)
 
         gl.disable(gl.DEPTH_TEST)
         gl.disable(gl.BLEND)
