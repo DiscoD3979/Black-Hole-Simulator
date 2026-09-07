@@ -105,8 +105,8 @@ test('accretion disk has relativistic beaming and a blue-violet color ramp', asy
   const shader = await readFile(new URL('../shaders/disk.glsl', import.meta.url), 'utf8')
 
   assert.match(shader, /doppler \* doppler \* doppler/)
-  assert.match(shader, /vec3 deepBlue = vec3\(0\.04, 0\.09, 0\.35\)/)
-  assert.match(shader, /float emission = 2\.1/)
+  assert.match(shader, /vec3 deepIndigo = vec3\(0\.06, 0\.04, 0\.42\)/)
+  assert.match(shader, /float emission = 2\.1 \* brightness/)
 })
 
 test('accretion disk uses a compact outer radius with soft fade', async () => {

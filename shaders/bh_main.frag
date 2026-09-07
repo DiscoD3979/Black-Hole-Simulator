@@ -75,6 +75,7 @@ void main() {
   float minR = length(rel0);
   float prevRelY = p.y - uBHPosition.y;
   float diskSpan = max(uDiskOuterRadius - uDiskInnerRadius, 1e-4);
+  int nCross = 0;
 
   for (int i = 0; i < 256; i++) {
     if (i >= uRaymarchSteps) break;
@@ -105,28 +106,42 @@ void main() {
     float relY = p.y - uBHPosition.y;
     float rc = length(p.xz - uBHPosition.xz);
 
-    // Thin volumetric glow around the disk plane. The vertical gaussian is
-    // integrated ANALYTICALLY over each step segment with erf, so the result
-    // is perfectly smooth regardless of step size (no step banding), and the
-    // outer fade removes any hard cylindrical cutoff (no square aura ends).
+    // Thin volumetric glow around the disk plane — THREE saturated layers:
+    //   near:   hot white-violet ring at the disk inner edge
+    //   middle: saturated violet glow
+    //   far:    wide faint deep-blue/indigo aura
+    // The vertical gaussian is integrated ANALYTICALLY with erf (no step
+    // banding), and the outer fade prevents any hard square cutoff.
     if (rc > rs * 1.02 && rc < uDiskOuterRadius * 1.15) {
       float edge = smoothstep(rs * 1.0, rs * 1.25, rc);
       float outerFade = 1.0 - smoothstep(uDiskOuterRadius * 0.75, uDiskOuterRadius * 1.1, rc);
       float hn = rs * (0.05 + 0.22 * clamp((rc - uDiskInnerRadius) / diskSpan, 0.0, 1.0)) * uDiskThickness;
-      float radial = pow(uDiskInnerRadius / max(rc, rs * 0.9), 2.4);
 
       // Exact integral of exp(-(y/hn)^2) over the segment's y-range [prevRelY, relY].
       float yi0 = prevRelY / max(hn, 1e-5);
       float yi1 = relY / max(hn, 1e-5);
       float vertIntegral = 0.5 * 1.7724539 * hn * (erfApprox(yi1) - erfApprox(yi0));
-      // Convert the y-integral to a path integral (grazing rays pass through
-      // more gas); clamp so extreme grazing angles cannot blow up.
+      // Grazing rays pass through more gas; clamp so they cannot blow up.
       float pathScale = clamp(1.0 / max(abs(dir.y), 0.25), 1.0, 4.0);
 
-      float glow = vertIntegral * radial * edge * outerFade * 0.16 * uDiskDensity * uDiskBrightness * pathScale;
-      vec3 glowCol = mix(vec3(0.30, 0.50, 1.05), vec3(0.90, 0.85, 1.05), clamp(radial * 0.55, 0.0, 1.0));
-      glowCol = mix(glowCol, vec3(1.0, 0.55, 0.22) + glowCol * 0.4, smoothstep(0.5, 0.85, uDiskHue));
-      col += trans * max(glowCol, vec3(0.0)) * max(glow, 0.0);
+      // Layered brightness profile (no power-law boost near the horizon —
+      // that made the lensed interior hot and gray).
+      float narrow = exp(-pow((rc - uDiskInnerRadius) / (rs * 0.6), 2.0)) * 1.35;
+      float medium = exp(-pow((rc - uDiskInnerRadius) / (uDiskOuterRadius * 0.30), 2.0)) * 0.50;
+      float wide   = exp(-((rc - uDiskInnerRadius) / (uDiskOuterRadius * 0.85)) * ((rc - uDiskInnerRadius) / (uDiskOuterRadius * 0.85)) * 2.2) * 0.20;
+      float auraB = (narrow + medium + wide) * uDiskBrightness;
+
+      // Saturated color ramp: white-violet → violet → blue-violet → deep indigo.
+      float tA = clamp((rc - rs) / max(uDiskOuterRadius - rs, 1e-4), 0.0, 1.0);
+      vec3 auraCol;
+      if (tA < 0.15)      auraCol = mix(vec3(1.00, 0.86, 1.08), vec3(0.64, 0.30, 1.10), tA / 0.15);
+      else if (tA < 0.50) auraCol = mix(vec3(0.64, 0.30, 1.10), vec3(0.38, 0.24, 1.00), (tA - 0.15) / 0.35);
+      else                auraCol = mix(vec3(0.38, 0.24, 1.00), vec3(0.13, 0.16, 0.90), (tA - 0.50) / 0.50);
+      // Warm variant when the color slider is pushed toward 1.
+      auraCol = mix(auraCol, vec3(1.00, 0.55, 0.22) + auraCol * 0.35, smoothstep(0.5, 0.85, uDiskHue));
+
+      float glow = vertIntegral * edge * outerFade * auraB * 1.1 * uDiskDensity * pathScale;
+      col += trans * max(auraCol, vec3(0.0)) * max(glow, 0.0);
     }
 
     // Disk plane crossing -> procedural thin-disk sample. Multiple crossings
@@ -136,10 +151,16 @@ void main() {
       vec3 crossP = mix(prevP, p, tC);
       float crossR = length(crossP - uBHPosition);
       if (crossR > rs * 1.02 && crossR < uDiskOuterRadius * 1.25) {
+        nCross++;
+        // Higher-order lensed images (3rd crossing and beyond) are heavily
+        // under-sampled at this step budget: they alias into thin chaotic
+        // rings near the shadow edge that reshuffle every time the camera
+        // moves. Damp them progressively — primary + secondary image stay.
+        float orderDamp = 1.0 / (1.0 + 0.9 * float(nCross - 1));
         vec3 dc = sampleAccretionDisk(crossP, dir, uBHPosition, rs,
           uDiskInnerRadius, uDiskOuterRadius, uDiskDensity, uDiskTemperature,
           uDiskAccretionSpeed, uTime, uDiskSpiralTightness, uDiskDopplerStrength,
-          uDiskHue, uDiskBrightness);
+          uDiskHue, uDiskBrightness) * orderDamp;
         float a = clamp(max(dc.r, max(dc.g, dc.b)) * 2.0, 0.0, 1.0);
         col += trans * dc;
         trans *= 1.0 - a * 0.85;

@@ -1,14 +1,14 @@
 vec3 temperature_to_rgb_cold(float t) {
   t = clamp(t, 0.0, 1.0);
-  vec3 deepBlue = vec3(0.04, 0.09, 0.35);
-  vec3 blue     = vec3(0.22, 0.46, 1.00);
-  vec3 violet   = vec3(0.68, 0.62, 1.00);
-  vec3 whiteHot = vec3(1.00, 0.98, 1.00);
-  vec3 pinkHot  = vec3(1.00, 0.78, 0.88);
-  if (t < 0.30) return mix(deepBlue, blue, t / 0.30);
+  vec3 deepIndigo = vec3(0.06, 0.04, 0.42);
+  vec3 blue       = vec3(0.26, 0.36, 1.00);
+  vec3 violet     = vec3(0.64, 0.30, 1.00);
+  vec3 whiteLav   = vec3(0.98, 0.92, 1.00);
+  vec3 pinkHot    = vec3(1.00, 0.75, 0.95);
+  if (t < 0.30) return mix(deepIndigo, blue, t / 0.30);
   if (t < 0.62) return mix(blue, violet, (t - 0.30) / 0.32);
-  if (t < 0.90) return mix(violet, whiteHot, (t - 0.62) / 0.28);
-  return mix(whiteHot, pinkHot, (t - 0.90) / 0.10);
+  if (t < 0.90) return mix(violet, whiteLav, (t - 0.62) / 0.28);
+  return mix(whiteLav, pinkHot, (t - 0.90) / 0.10);
 }
 
 vec3 temperature_to_rgb_warm(float t) {
@@ -41,12 +41,16 @@ vec3 sampleAccretionDisk(vec3 hitPoint, vec3 rayDir, vec3 bhPos, float bhRadius,
   float omega = accretionSpeed * 1.4 / pow(max(r / innerRadius, 0.05), 1.5);
   float swirl = angle + spiralTightness * lr - time * omega;
 
-  // Long azimuthal streaks sheared by differential rotation + fine detail,
-  // evaluated in log-radius. Low lr frequencies keep the ring bands wide and
-  // smooth instead of tight vinyl-groove stripes.
-  float n1 = fbm(vec3(swirl * 2.2, lr * 2.6, time * 0.10));
-  float n2 = fbm(vec3(swirl * 6.5 + 11.3, lr * 5.5 + 4.0, 7.7));
-  float filaments = (0.52 + 0.48 * n1) * (0.68 + 0.42 * n2);
+  // Swirling gas structure: broad smooth flow + medium turbulence + fine
+  // filaments, plus azimuthal WAVES (not radial rings) so the disk reads as
+  // flowing matter rather than concentric circles.
+  float flow  = fbm(vec3(swirl * 1.2, lr * 1.8, time * 0.06));            // large smooth streams
+  float turb  = fbm(vec3(swirl * 3.4 + 7.1, lr * 3.2, time * 0.10));      // medium turbulence
+  float fine  = fbm(vec3(swirl * 8.0 + 21.7, lr * 6.0 + 2.0, 3.3));       // fine filaments
+  float wave  = sin(swirl * 2.0 + flow * 6.0 + lr * 3.0) * 0.5 + 0.5;     // wavy azimuthal bands
+
+  float filaments = (0.48 + 0.52 * flow) * (0.60 + 0.50 * turb) * (0.72 + 0.42 * fine);
+  filaments *= 0.80 + 0.34 * wave * (0.4 + 0.6 * flow);
 
   // Radial structure: hot thin inner region, soft outer fade (no hard cut).
   float radialFalloff = pow(innerRadius / max(r, innerRadius), 2.4);
