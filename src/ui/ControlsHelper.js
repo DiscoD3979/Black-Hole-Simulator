@@ -21,9 +21,8 @@ const HOLD_KEYS = [
 
 const TAP_KEYS = [
   { code: 'KeyR', label: 'R', desc: 'сброс камеры' },
-  { code: 'KeyB', label: 'B', desc: 'бенчмарк' },
+  { code: 'KeyB', label: 'B', desc: 'бенчмарк вкл/выкл' },
   { code: 'F3', label: 'F3', desc: 'режим без постобработки' },
-  { code: 'KeyT', label: 'T', desc: 'debug passthrough' },
   { code: 'KeyH', label: 'H', desc: 'скрыть интерфейс' },
 ]
 

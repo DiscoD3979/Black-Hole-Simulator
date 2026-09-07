@@ -2,14 +2,13 @@
 // disk plane, a pass UNDER the disk, a climbing close flyby on the other side,
 // then a pull-back out to the wide orbit. Loops forever while benchmark runs.
 const FLIGHT_KEYS = [
-  { u: 0.00, r: 30.0, y: 8.0, w: 0.10 },
-  { u: 0.18, r: 27.0, y: 3.0, w: 0.18 },
-  { u: 0.36, r: 25.0, y: -4.0, w: 0.26 },
-  { u: 0.50, r: 27.0, y: -8.0, w: 0.20 },
-  { u: 0.66, r: 31.0, y: -3.0, w: 0.16 },
-  { u: 0.80, r: 34.0, y: 5.0, w: 0.12 },
-  { u: 0.90, r: 32.0, y: 8.0, w: 0.10 },
-  { u: 1.00, r: 30.0, y: 8.0, w: 0.10 },
+  { u: 0.00, r: 30.0, y: -6.0, w: 0.10 },
+  { u: 0.18, r: 27.0, y: -2.0, w: 0.18 },
+  { u: 0.34, r: 25.0, y: 3.0, w: 0.26 },
+  { u: 0.50, r: 28.0, y: 7.0, w: 0.22 },
+  { u: 0.66, r: 32.0, y: 4.0, w: 0.16 },
+  { u: 0.80, r: 34.0, y: -3.0, w: 0.12 },
+  { u: 1.00, r: 30.0, y: -6.0, w: 0.10 },
 ]
 
 function ease(t) {

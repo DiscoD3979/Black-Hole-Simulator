@@ -49,6 +49,15 @@ export class Benchmark {
     }
   }
 
+  stop() {
+    if (!this._active) return
+    this._active = false
+    if (this._previousProfile) {
+      this._qm.setProfile(this._previousProfile)
+      this._previousProfile = null
+    }
+  }
+
   isComplete() {
     return false
   }

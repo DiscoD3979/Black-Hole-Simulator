@@ -2,9 +2,9 @@ import { INTERNAL_ASPECT, clamp } from '../config.js'
 import { InputManager } from '../input/InputManager.js'
 
 const DEFAULTS = {
-  position: [0, 2.4, 30],
+  position: [0, 5.0, 30],
   yaw: -Math.PI / 2,
-  pitch: -0.075,
+  pitch: -0.16,
   baseSpeed: 5,
   boostMultiplier: 4,
   sensitivity: 0.0022,

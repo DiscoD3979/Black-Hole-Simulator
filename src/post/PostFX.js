@@ -80,7 +80,7 @@ export class PostFX {
   }
 
   setBloomIntensity(v) {
-    this.bloomIntensity = Math.max(0.0, Math.min(0.6, v * 0.12))
+    this.bloomIntensity = Math.max(0.0, Math.min(1.0, v * 0.2))
     if (this.bloom && this.bloom.setIntensity) {
       this.bloom.setIntensity(v)
     }
@@ -110,9 +110,9 @@ export class PostFX {
     this._chromaticPass()
     if (this.antiAliasingEnabled) {
       this._fxaaPass()
-      this._finalPass(this.fxaaFbo.texture)
+      this._finalPass(time, this.fxaaFbo.texture)
     } else {
-      this._finalPass(this.chromaticFbo.texture)
+      this._finalPass(time, this.chromaticFbo.texture)
     }
   }
 

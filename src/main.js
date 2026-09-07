@@ -113,7 +113,15 @@ async function bootstrap() {
 
   window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyH' && ui) ui.toggleVisibility()
-    if (e.code === 'KeyB' && !benchmark.isActive()) benchmark.start()
+    if (e.code === 'KeyB') {
+      if (benchmark.isActive()) {
+        benchmark.stop()
+        showHudInfo('Benchmark: stopped')
+      } else {
+        benchmark.start()
+        showHudInfo('Benchmark: started')
+      }
+    }
     if (e.code === 'F3') {
       renderer.clearPasses()
       if (renderer._postfxDisabled) {
@@ -127,14 +135,10 @@ async function bootstrap() {
         showHudInfo('Mode: DIRECT (no PostFX)')
       }
     }
-    if (e.code === 'KeyT') {
-      postfx._debugPassthrough = !postfx._debugPassthrough
-      showHudInfo('Debug passthrough: ' + (postfx._debugPassthrough ? 'ON' : 'OFF'))
-    }
   })
 
   let benchmarkSummary = ''
-  benchmark.start()
+  let _lastBenchmarkSummary = ''
 
   function frame(now) {
     const dt = timer.tick()
@@ -167,7 +171,11 @@ async function bootstrap() {
     perfMonitor.setBloom(qualityManager.getParams().bloom)
     perfMonitor.update()
 
-    if (benchmark.isActive()) benchmarkSummary = benchmark.formatResults()
+    if (benchmark.isActive()) {
+      benchmarkSummary = benchmark.formatResults()
+      _lastBenchmarkSummary = benchmarkSummary
+    }
+    else if (_lastBenchmarkSummary) benchmarkSummary = _lastBenchmarkSummary
 
     renderer.render(dt, now)
 

@@ -22,9 +22,11 @@ Open `http://localhost:8000` in a modern browser (Chrome, Firefox, Edge).
 | Scroll wheel | Adjust movement speed |
 | R | Reset camera position |
 | H | Toggle UI panels |
-| B | Start continuous MAX QUALITY benchmark |
+| B | Toggle continuous MAX QUALITY benchmark (on/off) |
 | F3 | Toggle direct render debug mode |
 | ESC | Release pointer lock |
+
+The bottom-left **Управление** panel shows clickable key chips — click-and-hold movement keys (W/A/S/D/Q/E/Shift), or tap action keys (R/B/F3/H).
 
 ## Architecture
 
@@ -84,7 +86,8 @@ shaders/
 2. **Bloom**: 5-level downsample/upsample chain (RGBA8)
 3. **Tone mapping**: ACES filmic + bloom composite + vignette (RGBA16F)
 4. **Chromatic aberration**: Per-channel UV offset (RGBA8)
-5. **Final**: Film grain + passthrough to screen
+5. **FXAA**: Edge anti-aliasing to remove staircase on glow/disk edges (RGBA8)
+6. **Final**: Film grain + passthrough to screen
 
 ## Quality Profiles
 
