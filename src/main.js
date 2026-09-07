@@ -135,6 +135,16 @@ async function bootstrap() {
         showHudInfo('Mode: DIRECT (no PostFX)')
       }
     }
+    // Debug views: inspect each intermediate render target while rotating.
+    if (e.code === 'Digit0') { postfx.setDebugView('off'); showHudInfo('Debug view: OFF (normal render)') }
+    if (e.code === 'Digit1') { postfx.setDebugView('scene'); showHudInfo('Debug view: 1 scene FBO (HDR)') }
+    if (e.code === 'Digit2') { postfx.setDebugView('bloom0'); showHudInfo('Debug view: 2 bloom down 1/2') }
+    if (e.code === 'Digit3') { postfx.setDebugView('bloom2'); showHudInfo('Debug view: 3 bloom down 1/8') }
+    if (e.code === 'Digit4') { postfx.setDebugView('bloom4'); showHudInfo('Debug view: 4 bloom down 1/32') }
+    if (e.code === 'Digit5') { postfx.setDebugView('bloomUp'); showHudInfo('Debug view: 5 bloom up output (what tonemap adds)') }
+    if (e.code === 'Digit6') { postfx.setDebugView('tonemap'); showHudInfo('Debug view: 6 tonemap output') }
+    if (e.code === 'Digit7') { postfx.setDebugView('chromatic'); showHudInfo('Debug view: 7 chromatic output') }
+    if (e.code === 'Digit8') { postfx.setDebugView('fxaa'); showHudInfo('Debug view: 8 fxaa output') }
   })
 
   let benchmarkSummary = ''

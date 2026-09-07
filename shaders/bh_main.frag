@@ -31,6 +31,17 @@ out vec4 fragColor;
 
 const float ESCAPE_R = 70.0;
 
+// Abramowitz-Stegun erf approximation (max error ~1.5e-7). Used for the
+// analytic vertical integral of the thin disk glow, which removes the
+// step-count banding that a naive per-step exp() accumulation produces.
+float erfApprox(float x) {
+  float s = x < 0.0 ? -1.0 : 1.0;
+  float a = abs(x);
+  float t = 1.0 / (1.0 + 0.3275911 * a);
+  float y = 1.0 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * exp(-a * a);
+  return s * y;
+}
+
 vec3 sampleBackground(vec3 dir) {
   return sampleStars(dir, uStarDensity, uStarTime, uStarSeed);
 }
@@ -94,21 +105,28 @@ void main() {
     float relY = p.y - uBHPosition.y;
     float rc = length(p.xz - uBHPosition.xz);
 
-    // Thin volumetric glow around the disk plane: gives the disk a
-    // perceived physical thickness and wraps a bright rim right up to the
-    // shadow edge instead of leaving a black gap.
-    if (rc > rs * 1.02 && rc < uDiskOuterRadius * 1.1) {
+    // Thin volumetric glow around the disk plane. The vertical gaussian is
+    // integrated ANALYTICALLY over each step segment with erf, so the result
+    // is perfectly smooth regardless of step size (no step banding), and the
+    // outer fade removes any hard cylindrical cutoff (no square aura ends).
+    if (rc > rs * 1.02 && rc < uDiskOuterRadius * 1.15) {
       float edge = smoothstep(rs * 1.0, rs * 1.25, rc);
+      float outerFade = 1.0 - smoothstep(uDiskOuterRadius * 0.75, uDiskOuterRadius * 1.1, rc);
       float hn = rs * (0.05 + 0.22 * clamp((rc - uDiskInnerRadius) / diskSpan, 0.0, 1.0)) * uDiskThickness;
-      float vert = exp(-relY * relY / max(hn * hn, 1e-6));
       float radial = pow(uDiskInnerRadius / max(rc, rs * 0.9), 2.4);
-      // Anti-banding: fade the per-step contribution when the layer is thinner
-      // than the step size, so discrete steps cannot print visible rings.
-      float w = clamp(hn / max(dt, 1e-4), 0.0, 1.0);
-      float glow = vert * radial * edge * dt * 0.16 * uDiskDensity * uDiskBrightness * w;
+
+      // Exact integral of exp(-(y/hn)^2) over the segment's y-range [prevRelY, relY].
+      float yi0 = prevRelY / max(hn, 1e-5);
+      float yi1 = relY / max(hn, 1e-5);
+      float vertIntegral = 0.5 * 1.7724539 * hn * (erfApprox(yi1) - erfApprox(yi0));
+      // Convert the y-integral to a path integral (grazing rays pass through
+      // more gas); clamp so extreme grazing angles cannot blow up.
+      float pathScale = clamp(1.0 / max(abs(dir.y), 0.25), 1.0, 4.0);
+
+      float glow = vertIntegral * radial * edge * outerFade * 0.16 * uDiskDensity * uDiskBrightness * pathScale;
       vec3 glowCol = mix(vec3(0.30, 0.50, 1.05), vec3(0.90, 0.85, 1.05), clamp(radial * 0.55, 0.0, 1.0));
       glowCol = mix(glowCol, vec3(1.0, 0.55, 0.22) + glowCol * 0.4, smoothstep(0.5, 0.85, uDiskHue));
-      col += trans * glowCol * glow;
+      col += trans * max(glowCol, vec3(0.0)) * max(glow, 0.0);
     }
 
     // Disk plane crossing -> procedural thin-disk sample. Multiple crossings

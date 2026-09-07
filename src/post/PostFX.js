@@ -27,17 +27,21 @@ export class PostFX {
 
     this._createFbos(this.width, this.height)
 
-    const [tonemapProgram, chromaticProgram, finalProgram, fxaaProgram] = await Promise.all([
+    const [tonemapProgram, chromaticProgram, finalProgram, fxaaProgram, debugProgram] = await Promise.all([
       createProgramFromFiles(gl, 'shaders/post_passthrough.vert', 'shaders/post_tonemap.frag'),
       createProgramFromFiles(gl, 'shaders/post_passthrough.vert', 'shaders/post_chromatic.frag'),
       createProgramFromFiles(gl, 'shaders/post_passthrough.vert', 'shaders/post_final.frag'),
       createProgramFromFiles(gl, 'shaders/post_passthrough.vert', 'shaders/post_fxaa.frag'),
+      createProgramFromFiles(gl, 'shaders/post_passthrough.vert', 'shaders/post_debug.frag'),
     ])
 
     this.programs.tonemap = tonemapProgram
     this.programs.chromatic = chromaticProgram
     this.programs.final = finalProgram
     this.programs.fxaa = fxaaProgram
+    this.programs.debug = debugProgram
+
+    this.uniforms.debug = buildUniformCache(gl, debugProgram, ['uTexture'])
 
     this.uniforms.tonemap = buildUniformCache(gl, tonemapProgram, [
       'uTexture', 'uBloomTexture', 'uExposure', 'uBloomIntensity', 'uResolution',
@@ -94,10 +98,57 @@ export class PostFX {
     this.antiAliasingEnabled = !!v
   }
 
+  // Debug view: draw a single intermediate render target straight to screen.
+  // Names: 'off' | 'scene' | 'bloom0'..'bloom4' | 'bloomUp' | 'tonemap' | 'chromatic' | 'fxaa'
+  setDebugView(name) {
+    this._debugView = name || 'off'
+  }
+
+  _resolveDebugTexture(sceneTexture) {
+    switch (this._debugView) {
+      case 'scene': return sceneTexture
+      case 'bloom0': return this.bloom.downFbos[0].texture
+      case 'bloom1': return this.bloom.downFbos[1].texture
+      case 'bloom2': return this.bloom.downFbos[2].texture
+      case 'bloom3': return this.bloom.downFbos[3].texture
+      case 'bloom4': return this.bloom.downFbos[4].texture
+      case 'bloomUp': return this.bloom.getOutputTexture()
+      case 'tonemap': return this.fbo.texture
+      case 'chromatic': return this.chromaticFbo.texture
+      case 'fxaa': return this.fxaaFbo.texture
+      default: return null
+    }
+  }
+
+  _debugPass(texture) {
+    const gl = this.gl
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    gl.viewport(0, 0, this.width, this.height)
+    gl.useProgram(this.programs.debug)
+
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+    const loc = this.uniforms.debug.get('uTexture')
+    if (loc) gl.uniform1i(loc, 0)
+
+    this._drawQuad()
+  }
+
   render(sceneTexture, time) {
     const gl = this.gl
     gl.disable(gl.DEPTH_TEST)
     gl.disable(gl.BLEND)
+
+    if (this._debugView && this._debugView !== 'off') {
+      const tex = this._resolveDebugTexture(sceneTexture)
+      if (tex) {
+        // Bloom targets are produced inside bloom.render(); run it so debug
+        // views of bloom levels show the CURRENT frame, not a stale one.
+        this.bloom.render(sceneTexture, this.renderer.quad)
+        this._debugPass(tex)
+      }
+      return
+    }
 
     if (this._debugPassthrough) {
       this._passthroughPass(sceneTexture)
