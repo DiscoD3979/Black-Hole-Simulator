@@ -1,12 +1,12 @@
 vec3 temperature_to_rgb_cold(float t) {
   t = clamp(t, 0.0, 1.0);
-  vec3 deepIndigo = vec3(0.06, 0.04, 0.42);
-  vec3 blue       = vec3(0.26, 0.36, 1.00);
-  vec3 violet     = vec3(0.64, 0.30, 1.00);
-  vec3 whiteLav   = vec3(0.98, 0.92, 1.00);
-  vec3 pinkHot    = vec3(1.00, 0.75, 0.95);
-  if (t < 0.30) return mix(deepIndigo, blue, t / 0.30);
-  if (t < 0.62) return mix(blue, violet, (t - 0.30) / 0.32);
+  vec3 deepViolet = vec3(0.20, 0.05, 0.52);
+  vec3 blueViolet = vec3(0.55, 0.28, 1.00);
+  vec3 violet     = vec3(0.72, 0.36, 1.00);
+  vec3 whiteLav   = vec3(0.94, 0.86, 1.00);
+  vec3 pinkHot    = vec3(1.00, 0.72, 0.95);
+  if (t < 0.30) return mix(deepViolet, blueViolet, t / 0.30);
+  if (t < 0.62) return mix(blueViolet, violet, (t - 0.30) / 0.32);
   if (t < 0.90) return mix(violet, whiteLav, (t - 0.62) / 0.28);
   return mix(whiteLav, pinkHot, (t - 0.90) / 0.10);
 }

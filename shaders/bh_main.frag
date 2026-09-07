@@ -124,19 +124,20 @@ void main() {
       // Grazing rays pass through more gas; clamp so they cannot blow up.
       float pathScale = clamp(1.0 / max(abs(dir.y), 0.25), 1.0, 4.0);
 
-      // Layered brightness profile (no power-law boost near the horizon —
-      // that made the lensed interior hot and gray).
-      float narrow = exp(-pow((rc - uDiskInnerRadius) / (rs * 0.6), 2.0)) * 1.35;
-      float medium = exp(-pow((rc - uDiskInnerRadius) / (uDiskOuterRadius * 0.30), 2.0)) * 0.50;
-      float wide   = exp(-((rc - uDiskInnerRadius) / (uDiskOuterRadius * 0.85)) * ((rc - uDiskInnerRadius) / (uDiskOuterRadius * 0.85)) * 2.2) * 0.20;
+      // Layered brightness profile — a wide vivid-violet aura with a
+      // brighter inner rim (no power-law boost near the horizon).
+      float narrow = exp(-pow((rc - uDiskInnerRadius) / (rs * 0.6), 2.0)) * 1.2;
+      float medium = exp(-pow((rc - uDiskInnerRadius) / (uDiskOuterRadius * 0.32), 2.0)) * 0.80;
+      float wide   = exp(-((rc - uDiskInnerRadius) / (uDiskOuterRadius * 0.85)) * ((rc - uDiskInnerRadius) / (uDiskOuterRadius * 0.85)) * 2.0) * 0.34;
       float auraB = (narrow + medium + wide) * uDiskBrightness;
 
-      // Saturated color ramp: white-violet → violet → blue-violet → deep indigo.
+      // PURPLE-first gradient. R stays close to B across the whole aura so it
+      // reads unambiguously as violet/magenta — never cyan or baby-blue.
       float tA = clamp((rc - rs) / max(uDiskOuterRadius - rs, 1e-4), 0.0, 1.0);
       vec3 auraCol;
-      if (tA < 0.15)      auraCol = mix(vec3(1.00, 0.86, 1.08), vec3(0.64, 0.30, 1.10), tA / 0.15);
-      else if (tA < 0.50) auraCol = mix(vec3(0.64, 0.30, 1.10), vec3(0.38, 0.24, 1.00), (tA - 0.15) / 0.35);
-      else                auraCol = mix(vec3(0.38, 0.24, 1.00), vec3(0.13, 0.16, 0.90), (tA - 0.50) / 0.50);
+      if (tA < 0.15)      auraCol = mix(vec3(1.00, 0.90, 1.06), vec3(0.90, 0.44, 1.05), tA / 0.15);
+      else if (tA < 0.55) auraCol = mix(vec3(0.90, 0.44, 1.05), vec3(0.66, 0.34, 0.98), (tA - 0.15) / 0.40);
+      else                auraCol = mix(vec3(0.66, 0.34, 0.98), vec3(0.50, 0.28, 0.92), (tA - 0.55) / 0.45);
       // Warm variant when the color slider is pushed toward 1.
       auraCol = mix(auraCol, vec3(1.00, 0.55, 0.22) + auraCol * 0.35, smoothstep(0.5, 0.85, uDiskHue));
 
