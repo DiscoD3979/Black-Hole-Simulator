@@ -8,6 +8,7 @@ uniform mat4 uInvCameraProj;
 uniform vec3 uBHPosition;
 uniform float uBHRadius;
 uniform float uBHLensStrength;
+uniform float uBHSpin;
 uniform int uRaymarchSteps;
 uniform float uSecondaryStepScale;
 uniform float uAspect;
@@ -94,11 +95,21 @@ void main() {
 
     float dt = clamp(r * 0.12, 0.02, 2.5) * uSecondaryStepScale;
 
-    // Schwarzschild null-geodesic bending: a = -1.5 * rs * h^2 * rp / r^5.
-    // Gives the correct photon sphere at 1.5 rs and shadow at ~2.6 rs.
+    // ---- Physical bending (post-Newtonian expansion of the photon geodesic) ----
+    // Schwarzschild: |r̂ × v̂| = b/r_eff is conserved; the transverse force
+    // -1.5*rs*h²·r̂/r⁵ reproduces the photon sphere (1.5 rs) and shadow (~2.6 rs).
     vec3 hv = cross(rp, dir);
     float h2 = dot(hv, hv);
     vec3 force = -1.5 * rs * h2 * rp / (r2 * r2 * r);
+
+    // Kerr frame dragging (Lense-Thirring): spacetime swirls around the spin
+    // axis (+Y). A photon near the hole is twisted azimuthally, which makes
+    // the shadow asymmetric and wraps the disk image — zero at spin = 0.
+    if (uBHSpin > 0.0001) {
+      vec3 omega = vec3(0.0, uBHSpin * 1.6 * rs * rs / max(r2 * r, 1e-5), 0.0); // Ω ~ a·rs²/r³
+      force += 2.0 * cross(omega, dir); // a_LT ≈ 2·(v × Ω)
+    }
+
     dir = normalize(dir + force * dt * uBHLensStrength);
 
     vec3 prevP = p;

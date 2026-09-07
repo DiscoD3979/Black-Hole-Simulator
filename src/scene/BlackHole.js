@@ -17,6 +17,7 @@ export class BlackHole {
       uBHPosition: this.position,
       uBHRadius: this.schwarzschildRadius,
       uBHLensStrength: this.lensStrength,
+      uBHSpin: this.spin,
       uRingStrength: this.ringStrength,
     }
   }
